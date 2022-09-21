@@ -1,4 +1,4 @@
-function lz78Encoding(text) {
+export function lz78Encoding(text) {
   const dictionary = ['']
   const textCompressed = []
   let charsToAdd = ''
@@ -7,35 +7,38 @@ function lz78Encoding(text) {
   
   for (let i of text) {
     charsToAdd += i
-    if (!done) {
-      dictionary.push(dictionary[dictReference] + i)
-      textCompressed.push({ dictReference, char: i })
-      charsToAdd = ''
-      done = true
-      continue
-    }
+    done = true
 
     for (let j = 1; j < dictionary.length; j++) {
       if (dictionary[j] === charsToAdd) {
         dictReference = j
         j = dictionary.length
-        charsToAdd = ''
         done = false
       }
     }
 
     if (done) {
-      console.log(dictReference, charsToAdd)
-      dictionary.push(dictionary[dictReference] + charsToAdd)
-      textCompressed.push({ dictReference, char: charsToAdd })
+      dictionary.push(dictionary[dictReference] + i)
+      textCompressed.push({ dictReference, char: i })
       charsToAdd = ''
+      dictReference = 0
+      done = false
     }
+  }
+
+  if (!done) {
+    textCompressed.push({ dictReference, char: '' })
+    dictReference = 0
+  }
+
+  if (textCompressed[textCompressed.length - 1].dictReference === 0 && textCompressed[textCompressed.length - 1].char === '') {
+    textCompressed.pop()
   }
 
   return { dictionary, textCompressed }
 }
 
-function lz78Decoding(dict, textCompressed) {
+export function lz78Decoding(dict, textCompressed) {
   let text = ''
   textCompressed.forEach(obj => {
     const { dictReference, char } = obj
@@ -50,5 +53,4 @@ const { dictionary, textCompressed } = lz78Encoding(word)
 console.log(dictionary)
 console.log(textCompressed)
 
-console.log(lz78Decoding(dictionary, textCompressed))
-console.log(word)
+console.log(lz78Decoding(dictionary, textCompressed) === word)
