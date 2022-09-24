@@ -47,10 +47,3 @@ export function lz78Decoding(dict, textCompressed) {
 
   return text
 }
-
-const word = 'ABRACADRABRARAAAA'
-const { dictionary, textCompressed } = lz78Encoding(word)
-console.log(dictionary)
-console.log(textCompressed)
-
-console.log(lz78Decoding(dictionary, textCompressed) === word)
