@@ -157,7 +157,7 @@ class Tree {
     this.updateNode(root.left, key)
     if (root.person.name == key.name & root.person.dpi == key.dpi) {
       if (key.hasOwnProperty('address')) root.person.address = key.address
-      if (key.hasOwnProperty('dateBirth')) root.person.dateBirth = key.dateBirth
+      if (key.hasOwnProperty('datebirth')) root.person.datebirth = key.datebirth
       return
     }
     this.updateNode(root.right, key)
