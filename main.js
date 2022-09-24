@@ -1,5 +1,6 @@
-import { huffmanEncoding, encode, decode } from './huffman.js'
 import Tree from './tree.js'
+import { huffmanEncoding, encode, decode } from './huffman.js'
+import { lz78Encoding, lz78Decoding } from './lz78.js'
 
 const dictionary = (key, companyTree, person) => {
   if (key === 'INSERT') companyTree.insert(person)
@@ -10,7 +11,7 @@ const dictionary = (key, companyTree, person) => {
 const trees = {}
 
 async function readFile() {
-  const file = await fetch('test.txt')
+  const file = await fetch('input.csv')
   .then(response => response.text())
   .then(data => {
     return data.split('\r\n')
@@ -30,6 +31,7 @@ async function mainFunction(data) {
     const person = item[1]
     person?.address
     person?.datebirth
+    person?.companies
 
     person?.companies?.forEach(company => {
       // create tree for each company
@@ -48,9 +50,38 @@ async function mainFunction(data) {
     })
   })
 
-  console.log('SEARCH', trees['BANCO S.A.'].tree.search({ dpi: encode('5822613821272', trees['BANCO S.A.'].huffman.dictLetters) })?.map(person => {
-    return {...person, 'dpi':decode(person.dpi, trees['BANCO S.A.'].huffman.dictBinary), 'dpiEncoded':person.dpi}
+  const companyName = 'Bogisich Group'
+  const dpiSearch = '8227056257156'
+  const treeFromCompany = trees[companyName]
+
+  console.log('SEARCH', treeFromCompany.tree.search({ dpi: encode(dpiSearch, treeFromCompany.huffman.dictLetters) })?.map(person => {
+    return {...person, 'dpi':decode(person.dpi, treeFromCompany.huffman.dictBinary), 'dpiEncoded':person.dpi}
   }))
 }
 
+async function getLetters(dpi) {
+  let destroy = false
+  for (let i = 1; i < 10; i++) {
+    const path = '/inputs/inputs/REC-' + dpi + '-' + i + '.txt'
+
+    const hola = await fetch(path)
+      .then(response => {
+        console.log(response)
+        if (!response.ok) {
+          destroy = true
+          return -1
+        }
+        return response.text()
+      })
+      .then(data => {
+        if (data != -1) return lz78Encoding(data).textCompressed
+      })
+
+    console.log(hola)
+    if (destroy) break
+  }
+}
 mainFunction(await readFile())
+
+
+getLetters(1041443605068)
