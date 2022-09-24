@@ -32,6 +32,7 @@ async function mainFunction(data) {
     person?.address
     person?.datebirth
     person?.companies
+    //person.letters = getLetters(person.dpi)
 
     person?.companies?.forEach(company => {
       // create tree for each company
@@ -51,22 +52,33 @@ async function mainFunction(data) {
   })
 
   const companyName = 'Bogisich Group'
-  const dpiSearch = '8227056257156'
+  const dpiSearch = '1041443605068'
   const treeFromCompany = trees[companyName]
+  const lettersCompressed = await getLetters(dpiSearch)
+  const letters = lettersCompressed.map((letter) => {
+    const { dictionary, textCompressed } = letter
+    return lz78Decoding(dictionary, textCompressed)
+  })
 
   console.log('SEARCH', treeFromCompany.tree.search({ dpi: encode(dpiSearch, treeFromCompany.huffman.dictLetters) })?.map(person => {
-    return {...person, 'dpi':decode(person.dpi, treeFromCompany.huffman.dictBinary), 'dpiEncoded':person.dpi}
+    return {
+      ...person,
+      'dpi': decode(person.dpi, treeFromCompany.huffman.dictBinary),
+      'dpiEncoded': person.dpi,
+      'lettersCompressed': lettersCompressed,
+      'letters': letters
+    }
   }))
 }
 
 async function getLetters(dpi) {
   let destroy = false
-  for (let i = 1; i < 10; i++) {
+  const letters = []
+  for (let i = 1; i < 100; i++) {
     const path = '/inputs/inputs/REC-' + dpi + '-' + i + '.txt'
 
-    const hola = await fetch(path)
+    const compressedLetter = await fetch(path)
       .then(response => {
-        console.log(response)
         if (!response.ok) {
           destroy = true
           return -1
@@ -74,14 +86,15 @@ async function getLetters(dpi) {
         return response.text()
       })
       .then(data => {
-        if (data != -1) return lz78Encoding(data).textCompressed
+        if (data != -1) return lz78Encoding(data)
       })
 
-    console.log(hola)
+    letters.push(compressedLetter)
+    if (letters[letters.length - 1] == undefined) letters.pop()
     if (destroy) break
   }
+
+  return letters
 }
+
 mainFunction(await readFile())
-
-
-getLetters(1041443605068)
