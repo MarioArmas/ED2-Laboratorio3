@@ -91,6 +91,8 @@ async function getLetters(dpi) {
     if (destroy) break
   }
 
+  console.clear()
+
   return letters
 }
 
