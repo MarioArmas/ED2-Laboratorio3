@@ -26,13 +26,13 @@ async function readFile() {
 }
 
 async function mainFunction(data) {
-  data.forEach((item) => {
+  await Promise.all(data.map(async (item) => {
     const operationString = item[0]
     const person = item[1]
     person?.address
     person?.datebirth
     person?.companies
-    //person.letters = getLetters(person.dpi)
+    person.lettersCompressed = await getLetters(person.dpi)
 
     person?.companies?.forEach(company => {
       // create tree for each company
@@ -49,24 +49,21 @@ async function mainFunction(data) {
       dictionary(operationString, trees[company].tree, personToStore)
       trees[company].tree.sortByDPI()
     })
-  })
+  }))
 
   const companyName = 'Bogisich Group'
   const dpiSearch = '1041443605068'
   const treeFromCompany = trees[companyName]
-  const lettersCompressed = await getLetters(dpiSearch)
-  const letters = lettersCompressed.map((letter) => {
-    const { dictionary, textCompressed } = letter
-    return lz78Decoding(dictionary, textCompressed)
-  })
 
   console.log('SEARCH', treeFromCompany.tree.search({ dpi: encode(dpiSearch, treeFromCompany.huffman.dictLetters) })?.map(person => {
     return {
       ...person,
       'dpi': decode(person.dpi, treeFromCompany.huffman.dictBinary),
       'dpiEncoded': person.dpi,
-      'lettersCompressed': lettersCompressed,
-      'letters': letters
+      'letters': person.lettersCompressed.map((letter) => {
+        const { dictionary, textCompressed } = letter
+        return lz78Decoding(dictionary, textCompressed)
+      })
     }
   }))
 }
