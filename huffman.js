@@ -83,10 +83,11 @@ export function encode(stringToEncode, dict) {
     binary += dict[char]
   })
 
-  return binary
+  return encode64('1' + binary)
 }
 
-export function decode(binaryToDecode, dict) {
+export function decode(stringEncoded, dict) {
+  const binaryToDecode = decode64(stringEncoded).slice(1)
   const binary = binaryToDecode.split('')
   let i = 0
   let j = 1
@@ -100,4 +101,24 @@ export function decode(binaryToDecode, dict) {
   }
 
   return word
+}
+
+const encode64 = bitstr => {
+  const bytes = []
+  let value = BigInt('0b' + bitstr)
+  
+  while (value > 0n) {
+    bytes.unshift(Number(value & 0xffn))
+    value >>= 8n
+  }
+  
+  return btoa(String.fromCharCode.apply(null, bytes))
+}
+
+const decode64 = b64 => {
+  const bstr = atob(b64)
+  
+  return new Array(bstr.length).fill(0).map(
+    (_,i) => bstr.charCodeAt(i).toString(2).padStart(8, i ? '0' : '')
+  ).join('')
 }
