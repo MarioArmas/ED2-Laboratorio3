@@ -34,7 +34,7 @@ async function mainFunction(data) {
     person?.companies
     person.lettersCompressed = await getLetters(person.dpi)
 
-    person?.companies?.forEach(company => {
+    await Promise.all(person?.companies?.map(company => {
       // create tree for each company
       const personToStore = {...person}
       trees[company] ??= {
@@ -48,7 +48,7 @@ async function mainFunction(data) {
       personToStore.dpi = encode(person.dpi, huffman.dictLetters)
       dictionary(operationString, trees[company].tree, personToStore)
       trees[company].tree.sortByDPI()
-    })
+    }))
   }))
 
   const companyName = 'Bogisich Group'
@@ -69,15 +69,15 @@ async function mainFunction(data) {
 }
 
 async function getLetters(dpi) {
-  let destroy = false
   const letters = []
+  
   for (let i = 1; i < 100; i++) {
     const path = '/inputs/inputs/REC-' + dpi + '-' + i + '.txt'
 
     const compressedLetter = await fetch(path)
       .then(response => {
         if (!response.ok) {
-          destroy = true
+          i = 100
           return -1
         }
         return response.text()
@@ -88,7 +88,6 @@ async function getLetters(dpi) {
 
     letters.push(compressedLetter)
     if (letters[letters.length - 1] == undefined) letters.pop()
-    if (destroy) break
   }
 
   console.clear()
