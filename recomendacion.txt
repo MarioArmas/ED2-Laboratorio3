@@ -1,0 +1,1 @@
+Para comprimir imágenes se podría simplemente comprimir la matriz que forma los pixeles de la imagen y comprimirla incluso con el mismo algoritmo o con otro que resulte más óptimo ya sea base64, lz, huffman, etc
